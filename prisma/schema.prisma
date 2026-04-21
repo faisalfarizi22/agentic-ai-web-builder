@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  projects  Project[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Project {
+  id              String            @id @default(cuid())
+  userId          String?
+  user            User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  status          String            @default("prompt_input")
+  prompt          String            @db.Text
+  stack           String?           @default("html")
+  stitchProjectId String?
+  stitchScreenId  String?
+  questions       Json?
+  prd             String?           @db.Text
+  frontendCode    String?           @db.Text
+  backendCode     String?           @db.Text
+  projectStructure Json?
+  content         ProjectContent?
+  generatedCodes  GeneratedCode[]
+  downloads       DownloadHistory[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model ProjectContent {
+  id              String   @id @default(cuid())
+  projectId       String   @unique
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  prdContent      String?  @db.Text
+  frontendContent String?  @db.Text
+  backendContent  String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model GeneratedCode {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  stage     String
+  code      String   @db.Text
+  language  String
+  createdAt DateTime @default(now())
+}
+
+model DownloadHistory {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  zipBlobUrl String?
+  fileName   String?
+  fileSize   Int?
+  createdAt  DateTime @default(now())
+}
